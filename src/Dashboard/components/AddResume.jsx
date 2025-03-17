@@ -13,34 +13,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { data } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
-import GlobalApi from "../../../service/GlobalApi.js";
+import {CreateNewResume} from "../../../service/GlobalApi.js";
 
 function AddResumePage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [resumeTitle, setResumeTitle] = useState("");
   const [loading , setLoading] = useState(false);
   const {user} = useUser();
-  const onCreate = async () => {
+  const onCreateResume = async () => {
     setLoading(true);
     const uuid = uuidv4();
     const data = {
         data:{
             title:resumeTitle,
-            uuid : uuid,
+            resumeId : uuid,
             userEmail :user?.primaryEmailAddress.emailAddress,
             uesrName:user?.firstName
         }
     }
     // console.log(resumeTitle , uuid);
-    GlobalApi.CreateNewResume(data).then((res) => {
-      console.log(res);
-      if(res.status === 200){
+    try {
+      console.log(data);
+      const response = CreateNewResume(data.data);
+      console.log(response);
+      if (response) {
         // setOpenDialog(false);
         setLoading(false);
       }
-    },(err) => {
-        setLoading(false);
-    })
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+    
   }
   return (
     <div>
@@ -60,7 +64,7 @@ function AddResumePage() {
             </DialogDescription>
             <div className="flex justify-end gap-3">
               <Button onClick ={() => setOpenDialog(false)}>Cancel</Button>
-              <Button disabled={!resumeTitle || loading} onClick={() => onCreate()}>
+              <Button disabled={!resumeTitle || loading} onClick={() => onCreateResume()}>
               {
                 loading ? <Loader2 className="animate-spin" /> : 'Create'
               }
